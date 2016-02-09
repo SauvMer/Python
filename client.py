@@ -26,6 +26,7 @@ class client:
         data += self.sock.recv(256).decode()
         return data
 
+
     def getCaptors(self):
         print('sending command')
         self.sendText('captor')
@@ -33,9 +34,25 @@ class client:
         data = self.receiveText()
         return data
 
+    def getImage(self):
+        print('sending command')
+        self.sendText('image')
+        print('waiting for response')
+        size = int(cli.receiveText())
+        print(size)
+        file = open('result.png', 'wb+')
+
+        for i in range(0, int(size/1024)+1):
+            bytes = self.sock.recv(1024)
+            file.write(bytes)
+            #print('packet received: ', bytes[-1])
+        #print('image received')
+        file.close()
+
 
 if __name__=='__main__':
     cli = client(sys.argv[1], int(sys.argv[2]))
     captors = cli.getCaptors()
     print(captors)
+    cli.getImage()
     cli.close()

@@ -1,5 +1,5 @@
 import socket
-import sys
+import sys, os
 
 class server:
 
@@ -32,13 +32,33 @@ class server:
         data += self.connection.recv(256).decode()
         return data
 
+    def sendImage(self, filename):
+        file = open(filename, 'rb')
+
+        size = os.path.getsize(filename)
+
+        ser.sendText(str(size))
+
+        bytes = file.read(1024)
+        while len(bytes) != 0:
+            self.connection.send(bytes)
+            bytes = file.read(1024)
+
+        file.close()
+
+
+
+
 if __name__=='__main__':
     ser = server(sys.argv[1], int(sys.argv[2]))
     while True:
+        print('waiting command')
         command = ser.receiveText()
         print('command: %s'%(command))
         if(command == 'captor'):
             ser.sendText('GPS: lat, lon; Gyro: 1,1,1')
+        elif(command == 'image'):
+            ser.sendImage('drone_snow.png')
         elif(command == 'close'):
             ser.close()
             break
