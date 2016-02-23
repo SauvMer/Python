@@ -10,7 +10,7 @@ class Drone:
 
     def run(self):
         self.receiv.start()
-        while 1:
+        while not self.receiv.stop:
             # IMAGE SENDING
             #self.sender.send_text("image")
             #self.sender.send_image("test.png")
@@ -22,11 +22,17 @@ class Drone:
             #msg = input("Message:")
             #self.sender.send_text(msg)
 
+    def stop(self):
+        self.receiv.stop = True
+        self.sender.sock.close()
+
     def parse_receiv(self, data):
         print("Data received: %s"%data)
         if(data.startswith("GPS")):
             gps_string = self.get_gps()
             self.sender.send_text("GPS" + gps_string)
+        elif(data.startswith("STOP")):
+            self.stop()
 
     def get_gps(self):
         #simu

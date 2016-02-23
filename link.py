@@ -46,11 +46,13 @@ class Receiv(Thread):
         print("Connecting...")
         self.sock.connect(self.server_addr)
         self.parent = parent
+        self.stop = False
 
     def run(self):
-        while self.run:
+        while not self.stop:
             data = self.receiv_text()
             self.parent.parse_receiv(data)
+        self.sock.close()
 
     def receiv_text(self):
         data = self.sock.recv(256).decode()
