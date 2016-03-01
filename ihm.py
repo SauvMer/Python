@@ -2,6 +2,7 @@ from tkinter.filedialog import *
 import queue
 from threading import Thread
 from time import sleep
+from tkinter import ttk
 
 #identifier le format des coordonnées
 def identifier(msg):
@@ -64,10 +65,26 @@ class IHM():
         label['fg']='blue' #création du texte de couleur bleue
         label['bg']='white' #couleur fond de texte
         label.pack()#insère le texte dans la fenetre
+        
+        #gestion des onglets
+        nb = ttk.Notebook(self.fenetre)
+        #premier onglet
+        onglet1 = ttk.Frame(nb)
+        nb.add(onglet1, text='Positionnement du drone')
+        #deuxieme onglet
+        onglet2 = ttk.Frame(nb)
+        nb.add(onglet2, text='Données de navigation')
+        #troisieme onglet
+        onglet3 = ttk.Frame(nb)
+        nb.add(onglet3, text='Flux vidéo')
+            #quatrieme onglet
+        onglet4 = ttk.Frame(nb)
+        nb.add(onglet4, text='Information sur la batterie')
+        nb.pack()
 
 
         #case envoyer & recevoir data coordonnees
-        l_pos = LabelFrame(self.fenetre, text="Positionnement du drone", padx=20, pady=20)
+        l_pos = LabelFrame(onglet1, text="Positionnement du drone", padx=20, pady=20)
         l_pos.pack(fill="both", expand="yes")
 
         # Bouton actualisation des coordonnees
@@ -146,6 +163,71 @@ class IHM():
         bouton_envoyer = Button(l_pos, text= "Envoyer les coordonnées", command = self.envoyer_pos)
         bouton_envoyer.grid(row=1, column=9)
 
+#gestion de la batterie
+        #Frame de la batterie
+        l_bat = Label(onglet4)
+        l_bat.pack(fill="both", expand = "yes")
+        #Voltage
+        label_volt = Label(l_bat, text="Voltage battery")
+        label_volt.grid(row= 0, column =0)
+        zone_reception_volt = Text(l_bat,width=25, height= 1,background='white')
+        zone_reception_volt.grid(row= 0, column =1) 
+        #Etat
+        label_cur = Label(l_bat, text="Current battery")
+        label_cur.grid(row= 1, column =0)
+        zone_reception_cur = Text(l_bat,width=25, height= 1,background='white')
+        zone_reception_cur.grid(row= 1, column =1)    
+        #Etat
+        label_rem = Label(l_bat, text="battery remaining")
+        label_rem.grid(row= 2, column =0)
+        zone_reception_rem = Text(l_bat,width=25, height= 1,background='white')
+        zone_reception_rem.grid(row= 2, column =1) 
+    
+#gestion de la navigation
+        #Frame de la vitesse (tangage, roulis, lacet)    
+        l_vit = LabelFrame(onglet2, text="Vitesse")
+        l_vit.pack(fill="both", expand="yes")
+        # label roulis
+        label_roulis = Label(l_vit, text="Roulis")
+        label_roulis.grid(row= 0, column =0)
+        zone_reception_roulis = Text(l_vit,width=25, height= 1,background='white')
+        zone_reception_roulis.grid(row= 0, column =1) 
+        #label tangage
+        label_tangage = Label(l_vit, text="Tangage")
+        label_tangage.grid(row= 1, column =0)
+        zone_reception_tangage = Text(l_vit,width=25, height= 1,background='white')
+        zone_reception_tangage.grid(row= 1, column =1)    
+        #label lacet
+        label_lacet= Label(l_vit, text="Lacet")
+        label_lacet.grid(row= 2, column =0)
+        zone_reception_lacet = Text(l_vit,width=25, height= 1,background='white')
+        zone_reception_lacet.grid(row= 2, column =1) 
+    
+        #Frame de l'accélération    
+        l_acc = LabelFrame(onglet2, text = "Accélération")
+        l_acc.pack(fill="both", expand = "yes")
+        # label roulis
+        label_x = Label(l_acc, text="X")
+        label_x.grid(row= 0, column =0)
+        zone_reception_x = Text(l_acc,width=25, height= 1,background='white')
+        zone_reception_x.grid(row= 0, column =1) 
+        #label tangage
+        label_y = Label(l_acc, text="Y")
+        label_y.grid(row= 1, column =0)
+        zone_reception_y = Text(l_acc,width=25, height= 1,background='white')
+        zone_reception_y.grid(row= 1, column =1)    
+        #label lacet
+        label_z= Label(l_acc, text="Z")
+        label_z.grid(row= 2, column =0)
+        zone_reception_z= Text(l_acc,width=25, height= 1,background='white')
+        zone_reception_z.grid(row= 2, column =1) 
+    
+        #Frame rotation
+        l_rot= LabelFrame(onglet2, text = "Rotation")
+        l_rot.pack(fill="both", expand = "yes")
+        zone_reception_rot= Text(l_rot,width=25, height= 1,background='white')
+        zone_reception_rot.grid(row= 2, column =1) 
+        
         #Bouton fermeture de la fenetre
         bouton=Button(self.fenetre, text="Fermer", command=self.fenetre.destroy) #Bouton qui détruit la fenêtre
         bouton.pack(side =BOTTOM, padx =1, pady = 1) #insère le bouton dans la boucle
