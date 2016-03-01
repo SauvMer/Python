@@ -3,6 +3,17 @@ import queue
 from threading import Thread
 from time import sleep
 
+#identifier le format des coordonnées
+def identifier(msg):
+    liste=['0','1','2','3','4','5','6','7','8','9']
+    i=0
+    for i in range(len(msg)):
+        if msg[i] in liste:
+            return True
+        else:
+            print("erreur de formatage de coordonnées")
+            return False
+
 class IHM():
 
     #recevoir les coordonnées
@@ -19,21 +30,19 @@ class IHM():
         self.fenetre.after(2000, self.update)
 
     #envoyer des coordonnées
-    '''def envoyer_pos(self):
-        deg_lat=msg_deg_lat.get()
-        min_lat=msg_min_lat.get()
-        sec_lat=msg_sec_lat.get()
-        deg_long=msg_deg_long.get()
-        min_long=msg_min_long.get()
-        sec_long=msg_sec_long.get()
-        if identifier(deg_lat) & identifier(min_lat) & identifier(sec_lat) :
-            if identifier(deg_long) & identifier(min_long) & identifier(sec_long):
-                print(deg_lat,min_lat,sec_lat,value_lat.get(),deg_long,min_long,sec_long,value_long.get())
-                file = open ("test.txt","w")
-                file.write(str(deg_lat)+','+str(min_lat) + ',' + str(sec_lat)+','+str(value_lat.get())+ ','+ str(deg_long)+','+str(min_long) + ',' + str(sec_long)+','+str(value_long.get()))
-                file.close()
+    def envoyer_pos(self):
+        deg_lat=self.msg_deg_lat.get()
+        min_lat=self.msg_min_lat.get()
+        sec_lat=self.msg_sec_lat.get()
+        deg_long=self.msg_deg_long.get()
+        min_long=self.msg_min_long.get()
+        sec_long=self.msg_sec_long.get()
+        if (identifier(deg_lat) & identifier(min_lat) & identifier(sec_lat)) and\
+            (identifier(deg_long) & identifier(min_long) & identifier(sec_long)):
+            wp = str(deg_lat)+','+str(min_lat) + ',' + str(sec_lat)+','+str(self.value_lat.get())+ ','+ str(deg_long)+','+str(min_long) + ',' + str(sec_long)+','+str(self.value_long.get())
+            self.base.sender.send_text("ADDWAY"+wp)
 
-        zone_deg_lat.delete(0,END)
+        '''zone_deg_lat.delete(0,END)
         zone_sec_lat.delete(0,END)
         zone_min_lat.delete(0,END)
         zone_deg_long.delete(0,END)
@@ -41,8 +50,8 @@ class IHM():
         zone_min_long.delete(0,END)
         zone_reception.delete("1.0", END)'''
 
-    def __init__(self, queue):
-
+    def __init__(self, base, queue):
+        self.base = base
         self.queue = queue
 
         #Gestion de la fenetre
@@ -78,25 +87,25 @@ class IHM():
         label_long.grid(row= 2, column =0)
 
         #bouton radio Nord et Sud
-        value_lat = StringVar()
-        bouton1 = Radiobutton(l_pos, text="N", variable=value_lat, value='N')
-        bouton2 = Radiobutton(l_pos, text="S", variable=value_lat, value='S')
+        self.value_lat = StringVar()
+        bouton1 = Radiobutton(l_pos, text="N", variable=self.value_lat, value='N')
+        bouton2 = Radiobutton(l_pos, text="S", variable=self.value_lat, value='S')
         bouton1.grid(row= 1, column =7)
         bouton2.grid(row= 1, column =8)
 
         #bouton radio Est et Ouest
-        value_long = StringVar()
-        bouton3 = Radiobutton(l_pos, text="O", variable=value_long, value='O')
-        bouton4 = Radiobutton(l_pos, text="E", variable=value_long, value='E')
+        self.value_long = StringVar()
+        bouton3 = Radiobutton(l_pos, text="O", variable=self.value_long, value='O')
+        bouton4 = Radiobutton(l_pos, text="E", variable=self.value_long, value='E')
         bouton3.grid(row= 2, column =7)
         bouton4.grid(row= 2, column =8)
 
         #zones degré
-        msg_deg_lat = StringVar()
-        zone_deg_lat = Entry(l_pos,background='white',textvariable=msg_deg_lat)
+        self.msg_deg_lat = StringVar()
+        zone_deg_lat = Entry(l_pos,background='white',textvariable=self.msg_deg_lat)
         zone_deg_lat.grid(row = 1, column = 1)
-        msg_deg_long = StringVar()
-        zone_deg_long = Entry(l_pos,background='white',textvariable=msg_deg_long)
+        self.msg_deg_long = StringVar()
+        zone_deg_long = Entry(l_pos,background='white',textvariable=self.msg_deg_long)
         zone_deg_long.grid(row = 2, column = 1)
 
         #label degré
@@ -106,11 +115,11 @@ class IHM():
         label_deg_long.grid(row=2,column = 2)
 
         #zones minutes
-        msg_min_lat = StringVar()
-        zone_min_lat = Entry(l_pos,background='white',textvariable=msg_min_lat)
+        self.msg_min_lat = StringVar()
+        zone_min_lat = Entry(l_pos,background='white',textvariable=self.msg_min_lat)
         zone_min_lat.grid(row = 1, column = 3)
-        msg_min_long = StringVar()
-        zone_min_long = Entry(l_pos,background='white',textvariable=msg_min_long)
+        self.msg_min_long = StringVar()
+        zone_min_long = Entry(l_pos,background='white',textvariable=self.msg_min_long)
         zone_min_long.grid(row = 2, column = 3)
 
         #label minutes
@@ -120,11 +129,11 @@ class IHM():
         label_min_long.grid(row=2,column = 4)
 
         #zones secondes
-        msg_sec_lat = StringVar()
-        zone_sec_lat = Entry(l_pos,background='white',textvariable=msg_sec_lat)
+        self.msg_sec_lat = StringVar()
+        zone_sec_lat = Entry(l_pos,background='white',textvariable=self.msg_sec_lat)
         zone_sec_lat.grid(row = 1, column = 5)
-        msg_sec_long = StringVar()
-        zone_sec_long = Entry(l_pos,background='white',textvariable=msg_sec_long)
+        self.msg_sec_long = StringVar()
+        zone_sec_long = Entry(l_pos,background='white',textvariable=self.msg_sec_long)
         zone_sec_long.grid(row = 2, column = 5)
 
         #label secondes
@@ -134,8 +143,8 @@ class IHM():
         label_sec_long.grid(row=2,column = 6)
 
         #bouton envoie coordonnées
-        #bouton_envoyer = Button(l_pos, text= "Envoyer les coordonnées", command = self.envoyer_pos)
-        #bouton_envoyer.grid(row=1, column=9)
+        bouton_envoyer = Button(l_pos, text= "Envoyer les coordonnées", command = self.envoyer_pos)
+        bouton_envoyer.grid(row=1, column=9)
 
         #Bouton fermeture de la fenetre
         bouton=Button(self.fenetre, text="Fermer", command=self.fenetre.destroy) #Bouton qui détruit la fenêtre

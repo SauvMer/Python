@@ -7,6 +7,7 @@ class Drone:
     def __init__(self, addr, port):
         self.receiv = Receiv(addr, port, self)
         self.sender = Sender(addr, port+1)
+        self.waypoints = []
 
     def run(self):
         self.receiv.start()
@@ -33,10 +34,23 @@ class Drone:
             self.sender.send_text("GPS" + gps_string)
         elif(data.startswith("STOP")):
             self.stop()
+        elif(data.startswith("ADDWAY")):
+            wp = stringtowaypoint(data[6:])
+            if wp != None:
+                self.waypoints.append(wp)
+            print(self.waypoints)
 
     def get_gps(self):
         #simu
         return gps_file.readline().replace('\n', '')
+
+def stringtowaypoint(str):
+    coord = str.split(',')
+    if len(coord) == 8:
+        return [float(coord[0]), float(coord[1]), float(coord[2]), coord[3],
+                float(coord[4]), float(coord[5]), float(coord[6]), coord[7]]
+    else:
+        return None
 
 
 if __name__ == "__main__":

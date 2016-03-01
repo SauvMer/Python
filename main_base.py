@@ -44,7 +44,7 @@ if __name__ == "__main__":
     base =Base(argv[1], int(argv[2]), queue)
     print("Base initialized")
     base.run()
-    ihm = IHM(queue)
+    ihm = IHM(base, queue)
 
     ihm.fenetre.mainloop()
     base.stop()
