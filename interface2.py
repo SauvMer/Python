@@ -67,11 +67,12 @@ if __name__ == '__main__':
     label.pack()#insère le texte dans la fenetre
 
 
+
     #case envoyer & recevoir data coordonnees
     l_pos = LabelFrame(fenetre, text="Positionnement du drone", padx=20, pady=20)
     l_pos.pack(fill="both", expand="yes")
 
-    bouton_coord= Button (l_pos, text="Obtenir les coordonnées", command=afficher_pos)
+    bouton_coord= Button (l_pos, text="Obtenir les coordonnées", command=afficher_pos, )
     bouton_coord.grid(row=0,column=0)
 
     #zone_reception = Canvas(l_pos,width=200, height= 25,background='white') #Définit les dimensions du canevas
