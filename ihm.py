@@ -1,8 +1,15 @@
 from tkinter.filedialog import *
+from tkinter.messagebox import showerror
 import queue
 from threading import Thread
-from time import sleep
+from time import time
+import tkinter as tk
 from tkinter import ttk
+import matplotlib
+matplotlib.use('TkAgg')
+from mpl_toolkits.basemap import Basemap
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import pattern
 
 #identifier le format des coordonnées
 def identifier(msg):
@@ -15,7 +22,38 @@ def identifier(msg):
             print("erreur de formatage de coordonnées")
             return False
 
+def parseGPS(trame):
+    data = trame.split(',')
+    if len(data) != 8:
+        return [0]
+
+    if data[3] == 'S':
+        data[3] = -1
+    else:
+        data[3] = 1
+    if data[7] == 'W':
+        data[7] = -1
+    else:
+        data[7] = 1
+    return [float(d) for d in data]
+
+
 class IHM():
+
+    def onclick_map(self, event):
+        if event.xdata != None:
+            lon, lat = self.map(event.xdata, event.ydata, inverse = True)
+            x, y = self.map(lon, lat)
+            self.map.scatter(x,y,150,marker='*',color='g')
+            way = pattern.ratissage_sc([x, y], 50,5,5,0)
+            patx=[]
+            paty=[]
+            way = way.transpose()
+            self.map.plot(way[0], way[1])
+            self.canvas.draw()
+        else:
+            showerror("Error", "Veuillez selectionner un point dans la carte")
+
 
     #recevoir les coordonnées
     def update(self):
@@ -24,6 +62,15 @@ class IHM():
             if(temp.startswith("GPS")):
                 self.zone_reception.delete("1.0", END)
                 self.zone_reception.insert(INSERT, temp[3:])
+                coord = parseGPS(temp[3:])
+                if coord[0] != 0:
+                    lat = coord[3]*(coord[0]+coord[1]/60.0+coord[2]/3600.0)
+                    lon = coord[7]*(coord[4]+coord[5]/60.0+coord[6]/3600.0)
+                    x, y = self.map(lon, lat) # (-4.47, 48.418)
+                    if hasattr(self, 'drone_dot'):
+                        self.drone_dot.remove()
+                    self.drone_dot = self.map.scatter(x,y,150,marker='o',color='r')
+                    self.canvas.draw()
         except queue.Empty:
             # It's ok if there's no data to read.
             # We'll just check again later.
@@ -58,13 +105,13 @@ class IHM():
         #Gestion de la fenetre
         self.fenetre = Tk() #création de la fenêtre, nom au choix
         self.fenetre.title("Centre de contrôle SAUVMER") #nom de la fenetre
-        self.fenetre['bg']='white'
+        #self.fenetre['bg']='grey'
         FWidth=self.fenetre.winfo_screenwidth()
         FHeight=self.fenetre.winfo_screenheight()
-        label = Label(self.fenetre, text="Bienvenue au centre de contrôle SAUVMER")
+        label = Label(self.fenetre, text="Bienvenue au centre de contrôle SAUVMER", )
         label['fg']='blue' #création du texte de couleur bleue
         label['bg']='white' #couleur fond de texte
-        label.pack()#insère le texte dans la fenetre
+        label.pack(fill=X)#insère le texte dans la fenetre
         
         #gestion des onglets
         nb = ttk.Notebook(self.fenetre)
@@ -77,15 +124,19 @@ class IHM():
         #troisieme onglet
         onglet3 = ttk.Frame(nb)
         nb.add(onglet3, text='Flux vidéo')
-            #quatrieme onglet
+        #quatrieme onglet
         onglet4 = ttk.Frame(nb)
         nb.add(onglet4, text='Information sur la batterie')
-        nb.pack()
+        nb.pack(fill=X)
 
 
         #case envoyer & recevoir data coordonnees
         l_pos = LabelFrame(onglet1, text="Positionnement du drone", padx=20, pady=20)
         l_pos.pack(fill="both", expand="yes")
+
+        #case afficher carte
+        l_map = LabelFrame(onglet1, text="Carte", padx=20, pady=20)
+        l_map.pack(fill="both", expand="yes")
 
         # Bouton actualisation des coordonnees
         #bouton_coord= Button (l_pos, text="Obtenir les coordonnées", command=self.afficher_pos)
@@ -163,6 +214,21 @@ class IHM():
         bouton_envoyer = Button(l_pos, text= "Envoyer les coordonnées", command = self.envoyer_pos)
         bouton_envoyer.grid(row=1, column=9)
 
+        #Affichage de la carte
+        fig = matplotlib.pyplot.figure(figsize=(12, 6))
+
+        self.map = Basemap(llcrnrlon=-4.476,llcrnrlat=48.417,urcrnrlon=-4.469,urcrnrlat=48.42, epsg=2154)
+
+        self.map.arcgisimage(service='ESRI_Imagery_World_2D', xpixels = 1500, verbose= True)
+
+        self.map.drawcountries()
+        self.map.drawcoastlines(linewidth=.5)
+
+        self.canvas = FigureCanvasTkAgg(fig, master=l_map)
+        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=X, expand=1)
+        self.canvas.mpl_connect('button_press_event', self.onclick_map)
+
+
 #gestion de la batterie
         #Frame de la batterie
         l_bat = Label(onglet4)
@@ -229,7 +295,11 @@ class IHM():
         zone_reception_rot.grid(row= 2, column =1) 
         
         #Bouton fermeture de la fenetre
-        bouton=Button(self.fenetre, text="Fermer", command=self.fenetre.destroy) #Bouton qui détruit la fenêtre
+        bouton=Button(self.fenetre, text="Fermer", command=self.quit) #Bouton qui détruit la fenêtre
         bouton.pack(side =BOTTOM, padx =1, pady = 1) #insère le bouton dans la boucle
 
         self.update()
+
+    def quit(self):
+        self.fenetre.quit()
+        self.fenetre.destroy()

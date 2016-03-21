@@ -1,5 +1,4 @@
 # Python
-Python code
 #exemple d'utilisation 
 import matplotlib
 matplotlib.use('TkAgg')
