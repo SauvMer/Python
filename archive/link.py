@@ -5,9 +5,9 @@ from threading import Thread
 class Sender:
 
     def __init__(self, addr, port):
-        self.server_addr = ('', port)
+        self.server_addr = (addr, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print(self.server_addr)
+
         self.sock.bind(self.server_addr)
         print("Listening...")
         self.sock.listen(1)
